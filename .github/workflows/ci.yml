@@ -30,11 +30,14 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
+      # No setup-android action: android-actions/setup-android@v3 runs
+      # `sdkmanager tools`, and the obsolete `tools` package no longer exists
+      # (run #1 failed on it). The runner already ships an Android SDK
+      # (ANDROID_HOME set, sdkmanager on PATH); just install what we need.
       - name: Install Android platform and build tools
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
       - name: Set up Bun 1.4.2
         uses: oven-sh/setup-bun@v2
