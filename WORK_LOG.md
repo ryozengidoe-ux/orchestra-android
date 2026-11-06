@@ -280,3 +280,34 @@
   что Lix без доступа к файлам для кода почти бесполезен).
 - Дальше: v2.3 (синхронизация с апстримом + PATCHES.md). v2.0.25 по-прежнему
   ждёт телефона Shadow.
+
+## 2026-11-06 ~06:36 — v2.3 закрыта: PATCHES.md + release-APK (крон orchestra-apk-10m-watch)
+
+- Подхвачен хвост прошлого прогона (~06:27): мерж апстрима в /tmp/orchestra-upstream,
+  патчи применены, копия синхронизирована, бандл пересобран. Не было сделано:
+  сборка release-APK (build-release.sh прерван досрочно, причина не установлена —
+  вероятно, рестарт рантайма), PATCHES.md, отметки, пуш.
+- Проверка синхронизации перед сборкой: diff копии против /tmp/orchestra-upstream —
+  отличия только наши файлы (PLAYBOOK.md, run_*.py, bun.lock). Патчи на месте:
+  assetsDir "webassets" (vite.config.ts:50), navigateFallbackDenylist
+  (?:webassets|assets) (vite.pwa.ts:32), photon — 0 совпадений в package.json,
+  mobile-overrides.css импортирован в index.css:5.
+- PATCHES.md создан (5 разделов + шаги повторной синхронизации):
+  photon-node, _assets→webassets, оверрайды v2.2, наши файлы (PLAYBOOK.md,
+  run_*.py, bun.lock), Android-проект. Апстрим: 827fb10 (merge 39945ca8,
+  база 329881c9).
+- Сборка release-APK: scripts/build-release.sh, BUILD SUCCESSFUL за 1м 15с
+  (с первого раза — trustStore и ANDROID_HOME уже в порядке).
+  app-release.apk, 34 192 935 байт,
+  sha256 282f3114675a52d4f97dda7edd76bef7f7af1163aff9f634c75ad9144f3833e0.
+  Проверено на диске: apksigner verify — Verifies (v2, release-ключ),
+  package ai.neurosignal.orchestra, 20024/2.0.24, assets/app/ 1698 файлов
+  (webassets/ 1675), 0 .map. Оверрайды внутри APK подтверждены
+  (100dvh, min-height:44px, font-size:16px в CSS из APK). Код апстрима
+  в бандле: rate-limit/escalation строки в JS-чанках.
+- В релиз 2.0.24 на GitHub НЕ выкладывал: та же версия 2.0.24/20024,
+  приёмка на телефоне не пройдена — как и v2.2, это проверочная сборка
+  на диске. Нумерацию v2.2/v2.3 решать отдельно до публикации.
+- PLAN.md: v2.3 помечена готовой. Дальше: v2.0.25 ждёт телефона Shadow;
+  v2.4 и v3.0 — только по его слову. Пуш PLAN.md, WORK_LOG.md, PATCHES.md,
+  v2.2-audit.md в ryozengidoe-ux/orchestra-android — делегирован браузеру.

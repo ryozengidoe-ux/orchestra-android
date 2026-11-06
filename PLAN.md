@@ -73,14 +73,35 @@
    APK на диске — проверочная сборка v2.2, в релиз 2.0.24 не выкладывалась
    (та же версия 2.0.24/20024; нумерацию v2.2 решать отдельно).
 
-## v2.3 — синхронизация с апстримом
+## v2.3 — синхронизация с апстримом ✅ ГОТОВО (06.11.2026)
 
 Цель: не отставать от оригинала NeiP4n/orchestra-app.
+**Статус: код готов 06.11.2026, приёмка — на телефоне (v2.0.25).**
 
 1. **Подтянуть обновления оригинала** в рабочую копию (оригинал — read-only, тянем в копию).
+   ✅ Апстрим подтянут до `827fb10` (merge `39945ca8`: B5 rate limit /
+   error taxonomy / escalation; `df38edf`: B2+B3+B13 autoloop event journal,
+   decide/cards/tick, server password, CORS, SSRF block; `5dedd19`: B0+B1
+   photon patch, typecheck fixes, serve grey-screen fix; `e9cf403`:
+   desktop capture за ORCHESTRA_DESKTOP_CAPTURE). База до мержа — `329881c9`.
+   Мерж зафиксирован в `/tmp/orchestra-upstream` (коммит `a7103ea`).
 2. **Повторно применить наши патчи**: переименование `_assets` → `webassets`, путь ассетов `assets/app/`, фиксы `build.gradle.kts`/манифеста.
+   ✅ Патчи применены и проверены в копии: `assetsDir "webassets"`,
+   `navigateFallbackDenylist (?:webassets|assets)`, photon-node удалён
+   (0 совпадений), `mobile-overrides.css` импортирован в `index.css`.
 3. **Вести PATCHES.md** — список наших отличий от оригинала, чтобы повторное применение было механическим.
+   ✅ `PATCHES.md` создан 06.11.2026: 5 разделов (photon, `_assets`,
+   оверрайды v2.2, наши файлы, Android-проект) + шаги повторной синхронизации.
 4. Пересобрать бандл и APK, прогнать приёмку v2.0.25 заново.
+   ✅ Бандл пересобран (38 с, оверрайды в `dist/webassets/index-*.css`
+   на месте, rate-limit/escalation код апстрима в JS-чанках).
+   ✅ Release-APK собран 06.11.2026 ~06:38: 34 192 935 байт,
+   sha256 `282f3114…`, apksigner Verifies (release-ключ),
+   package `ai.neurosignal.orchestra`, 20024/2.0.24, assets/app/ 1698
+   (webassets/ 1675), 0 .map, оверрайды внутри APK подтверждены.
+   ⏳ Приёмка на телефоне ждёт v2.0.25. В релиз 2.0.24 на GitHub НЕ
+   выкладывался (та же версия 2.0.24/20024; нумерацию v2.3 решать
+   отдельно, как и v2.2).
 
 ## v2.4 — фоновый режим и уведомления (если нужно)
 
