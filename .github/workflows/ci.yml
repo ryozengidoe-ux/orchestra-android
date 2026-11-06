@@ -72,13 +72,20 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
+      # GitHub-hosted Linux runners have no KVM / hardware acceleration, so
+      # the x86_64 emulator boots in slow software mode and sometimes never
+      # makes it (run #9: "Timeout waiting for emulator to boot"). Use the
+      # lighter AOSP image (the app needs no Google APIs), give boot twice
+      # the time, and skip boot animation/audio/snapshot to speed it up.
       - name: Smoke-test on the emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
-          target: google_apis
+          target: default
           arch: x86_64
           disable-animations: true
+          emulator-boot-timeout: 1200
+          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot
           # The runner executes every script line with a separate
           # `/usr/bin/sh -c`, so multi-line constructs (for/if) break here
           # (run #6 failed on a bare `for ...; do` line). The whole test
