@@ -10,12 +10,21 @@
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
 
-    <!-- Package visibility on Android 11+: the app hands external links to whatever browser claims them. -->
+    <!-- Package visibility on Android 11+: the app hands external links to whatever browser claims them.
+         One <intent> may carry at most one <data> scheme — three schemes in one
+         <intent> makes the package parser reject the APK at install time
+         (INSTALL_PARSE_FAILED_MANIFEST_MALFORMED, found by CI run 42193094370). -->
     <queries>
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
             <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
             <data android:scheme="mailto" />
         </intent>
     </queries>
