@@ -173,3 +173,44 @@
   выполняет на живых Lix-моделях (flash/pro/prime/kimi/qwen3.8/qwen-flash, не больше 3
   параллельных), проверяет на диске, обновляет PLAN.md и этот журнал. Молчит в пустых
   прогонах. Стоп: план готов или Lix умер (после 09.11) — крон удаляется сам.
+
+## 2026-11-06 ~05:46 — v2.1: release-APK 2.0.24 собран (крон orchestra-apk-10m-watch)
+
+- Взята следующая задача по плану: v2.1 (v2.0.25 — только с телефоном Shadow, пропущена).
+  Состояние цикла: v2.1 была частично готова (keystore, иконки, RELEASE_PROCESS.md,
+  build-release.sh), не хватало только самого release-APK — Gradle падал по RAM.
+- Сборка, три попытки:
+  1. `-Xmx512m` (перебит gradle.properties) — компиляция прошла, упала на
+     `lintVitalAnalyzeRelease`: не скачался lint-gradle 32.4.0 с dl.google.com —
+     PKIX «signature check failed».
+  2. Причина — CA снова ротировался: в текущем бандле Hatch CA fingerprint
+     `38:B2:94:EF…` (был `6C:C1:D9…`). Пересобран trustStore
+     `gradle/hatch-cacerts` из текущего `/run/hatch/egress-tls/ca-bundle.pem`.
+  3. Вторая грабля — `ANDROID_HOME` в env нет, Gradle: «SDK location not found».
+     SDK — `/home/hatch/android-sdk`, задан явно.
+  4. Третья попытка — BUILD SUCCESSFUL за 1м 37с.
+- Итог: `app/build/outputs/apk/release/app-release.apk`, 34 056 839 байт,
+  sha256 `ec5f5789c7aea369d018d4a9e02596561e369098f68f4ed34e6da4dc5661df8f`.
+  Проверено на диске: apksigner verify — Verifies (подпись release-ключом),
+  package ai.neurosignal.orchestra, versionCode 20024, versionName 2.0.24,
+  assets/app/ 1698 файлов, 0 .map. Иконка в APK есть: aapt2 в релизе сокращает
+  пути ресурсов (`res/BW.xml`, 448 байт — adaptive-icon XML; в debug-APK пути полные).
+- `scripts/build-release.sh` обновлён: ANDROID_HOME по умолчанию, малый heap
+  (-Xmx512m, MaxMetaspaceSize 256m), parallel=false, workers max 1,
+  JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true. RELEASE_PROCESS.md дополнен
+  (heap, ANDROID_HOME, новый fingerprint CA). PLAN.md: v2.1 помечена готовой.
+- Дальше: заменить ассет в релизе orchestra-android-2.0.24 на release-подписанный APK
+  (тег тот же, debug-APK остаётся на Google Drive) + запушить PLAN.md, WORK_LOG.md,
+  RELEASE_PROCESS.md, scripts/build-release.sh в ryozengidoe-ux/orchestra-android
+  загрузкой через браузер. На телефоне по-прежнему не ставился — v2.0.25 открыта.
+
+## 2026-11-06 ~06:00 — v2.1-хвост: замена ассета подтверждена, пуш файлов — в работе (крон orchestra-apk-10m-watch)
+
+- Проверка через GitHub API: ассет orchestra-android-2.0.24.apk в релизе — уже release-APK:
+  34 056 839 байт, sha256 `ec5f5789c7aea369d018d4a9e02596561e369098f68f4ed34e6da4dc5661df8f`,
+  загружен 05:54 по Самаре; описание релиза тоже обновлено (release-подпись, чекбоксы).
+  Браузерная задача прошлого прогона (980cf22b) замену ассета выполнила.
+- Не сделано: пуш обновлённых PLAN.md, WORK_LOG.md, RELEASE_PROCESS.md,
+  scripts/build-release.sh — в репозитории по-прежнему коммит eb25d83 от 05:19
+  (до завершения v2.1). Пуш делегирован браузеру заново в этом прогоне.
+- Дальше: v2.2 (мобильная вёрстка) — аудит бандла на живых Lix-моделях.

@@ -41,14 +41,16 @@
 5. Приёмка: приложение открывается, подключается, сессия идёт.
    ⚠️ Этот пункт без телефона Shadow не сделать — если телефон недоступен, делать следующие пункты, а этот держать открытым.
 
-## v2.1 — релизная сборка и процесс релизов
+## v2.1 — релизная сборка и процесс релизов ✅ ГОТОВО (06.11.2026)
 
 Цель: релизы — не debug, а подписанные, по одному и тому же процессу.
 
-1. **Release-подпись.** Отдельный keystore для релизов (не debug), `versionCode` +1 каждый релиз, `versionName` по плану.
-2. **Шаблон релиза.** Описание, хеш APK, что изменилось, что проверено (на диске / на телефоне — честно).
-3. **Процедура пересборки бандла** из `orchestra-src/` — записать шагами (bun install/build, проверка `webassets/`, 0 .map), чтобы не вспоминать каждый раз.
-4. **Вшить иконку** из `design/` (orchestra-icon-opus) как иконку приложения.
+1. **Release-подпись.** ✅ Отдельный keystore для релизов (не debug), `versionCode` +1 каждый релиз, `versionName` по плану. Keystore `release/orchestra-release.keystore`, пароли — только в `release/keystore-passwords.env` (chmod 600, в git не попадает).
+2. **Шаблон релиза.** ✅ Описание, хеш APK, что изменилось, что проверено (на диске / на телефоне — честно) — в `RELEASE_PROCESS.md`.
+3. **Процедура пересборки бандла** ✅ записана шагами в `RELEASE_PROCESS.md` (bun install/build, проверка `webassets/`, 0 .map).
+4. **Вшить иконку** ✅ из `design/` (orchestra-icon-opus) как иконку приложения — разложена по `app/src/main/res/mipmap-*/`, фон `#0E0E11`, в release-APK на месте (aapt2 в релизе сокращает пути ресурсов: `res/BW.xml` 448 байт — это adaptive-icon XML).
+5. **Release-APK 2.0.24 собран и проверен на диске 06.11.2026 ~05:51:** `app/build/outputs/apk/release/app-release.apk`, 34 056 839 байт, sha256 `ec5f5789c7aea369d018d4a9e02596561e369098f68f4ed34e6da4dc5661df8f`, apksigner verify — Verifies, подпись release-ключом, package `ai.neurosignal.orchestra`, versionCode 20024, versionName 2.0.24, assets/app/ 1698 файлов, 0 .map. Сборка прошла только с малым heap (`-Xmx512m`, перебивает `-Xmx1g` из gradle.properties) и после пересборки trustStore из текущего CA-бандла (CA снова ротировался: новый fingerprint `38:B2:94:EF…`, старый `6C:C1:D9…` мёртв) + `ANDROID_HOME=/home/hatch/android-sdk` (в env не задан, без него Gradle не находит SDK). Скрипт `scripts/build-release.sh` обновлён: ANDROID_HOME по умолчанию, малый heap, `JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true`.
+   На телефоне НЕ ставился — приёмка v2.0.25 по-прежнему открыта.
 
 ## v2.2 — мобильная вёрстка и UX
 
