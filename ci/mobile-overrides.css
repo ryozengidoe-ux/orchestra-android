@@ -1,0 +1,59 @@
+/* v2.2 — мобильные оверрайды (только ≤767px, десктоп не трогаем).
+   Источник: v2.2-audit.md (18 проблем). Файл импортируется в конце index.css,
+   поэтому правила здесь бьют утилиты Tailwind (они в слоях).
+   Проверка на устройстве — в v2.0.25; здесь только чтение кода + сборка. */
+
+/* №12, №17 — поле ввода и все инпуты 16px: убираем риск авто-зума при фокусе.
+   maximum-scale=1 НЕ ставим — вредит доступности. */
+@media (max-width: 767px) {
+  textarea,
+  input,
+  select {
+    font-size: 16px;
+  }
+
+  /* №1, №9 — мелкий текст: 13px → 14px, 12px → 13px, 11px → 12px. */
+  .text-\[13px\] {
+    font-size: 14px;
+  }
+  .text-\[12px\] {
+    font-size: 13px;
+  }
+  .text-\[11px\] {
+    font-size: 12px;
+  }
+
+  /* №3 — строки меню 28px → минимум 44px для пальца. */
+  .desktop-app-menu [data-component="menu-v2-item"] {
+    min-height: 44px;
+  }
+
+  /* №6 — строки сессий и поиск: тапы не ниже 44px. */
+  [data-component="home-session-search-row"],
+  .group\/session {
+    min-height: 44px;
+  }
+
+  /* №2 — кнопки композера (отправка, аттачменты): не меньше 44px. */
+  [data-slot="composer-actions"] button,
+  [data-slot="composer-controls"] button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* №9 — заголовки строк настроек крупнее. */
+  [data-slot="settings-row-title"] {
+    font-size: 14px;
+  }
+
+  /* №10 — command palette: высота от dvh, а не vh (клавиатура не съедает низ). */
+  [data-component="dialog-v2"]:has(.command-palette) [data-slot="dialog-container"] {
+    max-height: min(calc(100dvh - 96px), 480px);
+    margin-top: max(48px, calc((100dvh - 480px) / 2));
+  }
+
+  /* №11 — диалоги провайдеров: та же замена vh → dvh. */
+  [data-component="dialog-v2"] [data-slot="dialog-container"] {
+    max-height: min(calc(100dvh - 16px), 560px);
+  }
+}
