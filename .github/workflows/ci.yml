@@ -1,0 +1,99 @@
+name: CI — build and smoke-test the APK
+
+# Builds the debug APK from this repo + the upstream web bundle,
+# installs it on an Android emulator and checks it launches without crashing.
+# Upstream pin and patches: see ci/apply-patches.sh and PATCHES.md.
+# Debug build only — the release keystore never leaves the builder's machine.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out orchestra-android
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform and build tools
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+
+      - name: Set up Bun 1.4.2
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - name: Clone upstream orchestra-app at 39945ca8
+        run: |
+          git clone https://github.com/NeiP4n/orchestra-app.git ../orchestra-app
+          git -C ../orchestra-app checkout 39945ca845a091d06550fc24176efdfeacea2357
+
+      - name: Apply our patches to the bundle
+        run: bash ci/apply-patches.sh ../orchestra-app
+
+      - name: Install web dependencies
+        run: bun install
+        working-directory: ../orchestra-app
+
+      # gradle.properties carries the sandbox-only egress trustStore path;
+      # on a runner there is direct internet, so drop those flags.
+      - name: Drop the sandbox-only trustStore from gradle.properties
+        run: sed -i 's|^org.gradle.jvmargs=.*|org.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8|' gradle.properties
+
+      # Web-UI upload does not preserve the executable bit on gradlew.
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Smoke-test on the emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: |
+            adb install app/build/outputs/apk/debug/app-debug.apk
+            adb shell am start -n ai.neurosignal.orchestra/.MainActivity
+            for i in 1 2 3 4 5 6; do
+              sleep 5
+              FOCUS=$(adb shell dumpsys window windows | grep -i mCurrentFocus || true)
+              echo "focus: $FOCUS"
+              echo "$FOCUS" | grep -q "ai.neurosignal.orchestra" && break
+            done
+            echo "$FOCUS" | grep -q "ai.neurosignal.orchestra" || { echo "APP NOT IN FOREGROUND"; exit 1; }
+            if adb logcat -d | grep -q "FATAL EXCEPTION"; then
+              echo "CRASH FOUND:"
+              adb logcat -d | grep -i "FATAL EXCEPTION"
+              exit 1
+            fi
+            adb exec-out screencap -p > screenshot.png
+            ls -la screenshot.png
+
+      - name: Upload APK and screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-and-screenshot
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            screenshot.png
