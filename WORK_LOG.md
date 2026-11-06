@@ -401,3 +401,16 @@
   (install + запуск MainActivity + проверка foreground и FATAL + скриншот).
   Только debug-сборка; release-keystore в репо не попадает.
 - Дальше: пуш исходников + CI (35 файлов), первый прогон Actions запустится сам.
+
+## 2026-11-06 ~13:04–13:09 — CI: прогоны №1 и №2 упали на установке SDK
+
+- Пуш 35 файлов завершён (15 коммитов, HEAD 249a2f8, все ключевые файлы на месте,
+  проверено по API). Первый прогон Actions запустился сам (run 42192230846).
+- Прогон №1 — failure за 15 с: шаг Set up Android SDK (android-actions/setup-android@v3)
+  вызывает `sdkmanager tools`, а пакета `tools` в SDK больше нет (лог прочитан через
+  браузер). Исправление: шаг удалён, sdkmanager напрямую. Коммит cdeb846.
+- Прогон №2 (run 42192711457, head cdeb846) — failure за 10 с: шаг Install Android
+  platform and build tools: `sdkmanager: command not found` (exit 127) — на раннере
+  sdkmanager НЕ в PATH. Исправление: искать sdkmanager под $ANDROID_HOME/cmdline-tools/*/bin.
+- Дальше: пуш исправленного ci.yml + эта запись → прогон №3; проверка около 13:46
+  (крон orchestra-ci-run2-check) — доложить результат Shadow.
