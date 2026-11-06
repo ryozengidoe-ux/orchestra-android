@@ -653,6 +653,30 @@
   крон не дублирует.
 - Брать нечего — прогон молчит, в чат не писал.
 
+## 2026-11-06 ~17:16 — release-APK с фиксом манифеста собран и проверен (крон orchestra-apk-10m-watch)
+
+- Shadow 17:13: «Собери release-APK с фиксом» — после зелёных CI №12/№13
+  (эмулятор принял APK, фокус-чек починен). Сборка запущена основным агентом
+  чата параллельно с прогоном крона; этот прогон независимо проверил результат
+  на диске, сам не пересобирал (пересборка дала бы тот же бандл).
+- APK: `app/build/outputs/apk/release/app-release.apk`, 34 192 963 байт,
+  sha256 `c5f3c4e139e77155bd9f0b14119b60db58b55eb0d403df2264468f5fe4f71915`.
+  Копия: `orchestra-android-2.0.24-release-manifest-fix.apk` (тот же хеш).
+- Проверено на диске: apksigner verify — Verifies (v2, release-ключ,
+  сертификат `a746b1da…` — тот же, что у release-APK v2.1),
+  package ai.neurosignal.orchestra, 20024/2.0.24, ZIP цел,
+  assets/app/ 1698 файлов (webassets/ 1675), 0 .map,
+  оверрайды v2.2 в CSS внутри APK, код апстрима v2.3 (escalation в 3 JS-чанках).
+- Фикс манифеста внутри APK подтверждён (aapt2 xmltree): `<queries>` —
+  три отдельных `<intent>`, по одной схеме: https, http, mailto.
+  Именно этот дефект давал INSTALL_PARSE_FAILED_MANIFEST_MALFORMED в CI №4/№5
+  и, вероятно, «APK damaged» на телефоне Shadow 06.11 ~12:24.
+- В релиз 2.0.24 на GitHub НЕ выкладывал: Shadow сказал «собери» — сборка
+  готова на диске, замена ассета в релизе — следующий шаг по его слову.
+  Версия та же 2.0.24/20024 (нумерацию v2.2/v2.3 решать отдельно).
+- Дальше: v2.0.25 — попросить Shadow поставить этот APK на телефон;
+  v2.4/v3.0 — только по его слову.
+
 ## 2026-11-06 ~17:06 — прогон крона orchestra-apk-10m-watch (тихий)
 
 - Состояние цикла: ничего не запущено. v2.1/v2.2/v2.3 готовы; v2.0.25 ждёт
@@ -670,3 +694,23 @@
 - Артефакт apk-and-screenshot (35 797 127 байт), не истёк — APK + скриншот лежат на странице run'а.
 - Фикс подтверждён: plain `dumpsys window` + mFocusedApp сработал, прогон №11 с шестью пустыми «focus:» и «APP NOT IN FOREGROUND» закрыт.
 - Ссылка: https://github.com/ryozengidoe-ux/orchestra-android/actions/runs/42220756003
+
+## 2026-11-06 ~17:14–17:17 — Release-APK 2.0.24 с фиксом манифеста (выбор Shadow)
+
+- Shadow выбрал «Собери release-APK с фиксом» (вместо скачивания debug-APK
+  со страницы прогона CI №13).
+- Перед сборкой: CA снова ротировался — текущий fingerprint A0:BA:DC:2A...
+  (был 38:B2:94... от ~05:50). trustStore gradle/hatch-cacerts пересобран
+  из текущего бандла (свежая копия cacerts JDK 21 + импорт hatch-egress-ca,
+  fingerprint сверен).
+- Сборка: scripts/build-release.sh (без versionCode — 20024 из бандла),
+  BUILD SUCCESSFUL за 1м12с (большинство задач up-to-date от v2.3).
+- APK: app/build/outputs/apk/release/app-release.apk, 34 192 963 байт,
+  sha256 c5f3c4e139e77155bd9f0b14119b60db58b55eb0d403df2264468f5fe4f71915.
+- Проверено на диске: apksigner verify -v → Verifies (v2), assets/app 1698,
+  badging ai.neurosignal.orchestra 20024/2.0.24, внутри APK в <queries> три
+  отдельных <intent> (https/http/mailto) — фикс на месте.
+- Копия для Shadow: staging-release/orchestra-android-2.0.24-release-manifest-fix.apk,
+  приложена в чат.
+- Релиз на GitHub (тег orchestra-android-2.0.24) пока со старым ломаным APK —
+  замена после проверки установки на телефоне.
