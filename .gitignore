@@ -1,0 +1,6 @@
+release/
+.local/
+.gradle/
+build/
+app/build/
+*.apk
