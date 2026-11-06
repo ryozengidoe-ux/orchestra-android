@@ -55,9 +55,12 @@ typecheck fixes, serve grey-screen fix; `e9cf403`: desktop capture
 - `~/workspace/orchestra_android/` — проект с нуля по образцу
   `packages/android` оригинала, пакет `ai.neurosignal.orchestra`.
   Свои фиксы `app/build.gradle.kts` (Gradle 9.6), манифеста
-  (`densityDpi` убран из configChanges), флага
-  `android.sourceset.disallowProvider=false`, пути ассетов
-  `generated/webAssets/app` + `exclude("**/*.map")`.
+  (`densityDpi` убран из configChanges; `<queries>` — один `<intent>`
+  на схему: https/http/mailto разнесены по трём `<intent>`,
+  иначе парсер отклоняет APK при установке —
+  INSTALL_PARSE_FAILED_MANIFEST_MALFORMED, найдено прогоном CI
+  42193094370), флага `android.sourceset.disallowProvider=false`,
+  пути ассетов `generated/webAssets/app` + `exclude("**/*.map")`.
   Подробности — в `WORK_LOG.md` и `~/AGENTS.md`.
 
 ## Как повторить синхронизацию
