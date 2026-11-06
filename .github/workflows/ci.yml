@@ -32,10 +32,15 @@ jobs:
 
       # No setup-android action: android-actions/setup-android@v3 runs
       # `sdkmanager tools`, and the obsolete `tools` package no longer exists
-      # (run #1 failed on it). The runner already ships an Android SDK
-      # (ANDROID_HOME set, sdkmanager on PATH); just install what we need.
+      # (run #1 failed on it). The runner ships an Android SDK, but sdkmanager
+      # is NOT on PATH (run #2 failed with `command not found`, exit 127),
+      # so locate it under $ANDROID_HOME/cmdline-tools first.
       - name: Install Android platform and build tools
         run: |
+          for d in "$ANDROID_HOME"/cmdline-tools/*/bin; do
+            [ -x "$d/sdkmanager" ] && export PATH="$d:$PATH" && break
+          done
+          command -v sdkmanager || { echo "sdkmanager not found under $ANDROID_HOME"; ls "$ANDROID_HOME/cmdline-tools/" || true; exit 1; }
           yes | sdkmanager --licenses || true
           sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
