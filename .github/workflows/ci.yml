@@ -79,23 +79,11 @@ jobs:
           target: google_apis
           arch: x86_64
           disable-animations: true
-          script: |
-            adb install app/build/outputs/apk/debug/app-debug.apk
-            adb shell am start -n ai.neurosignal.orchestra/.MainActivity
-            for i in 1 2 3 4 5 6; do
-              sleep 5
-              FOCUS=$(adb shell dumpsys window windows | grep -i mCurrentFocus || true)
-              echo "focus: $FOCUS"
-              echo "$FOCUS" | grep -q "ai.neurosignal.orchestra" && break
-            done
-            echo "$FOCUS" | grep -q "ai.neurosignal.orchestra" || { echo "APP NOT IN FOREGROUND"; exit 1; }
-            if adb logcat -d | grep -q "FATAL EXCEPTION"; then
-              echo "CRASH FOUND:"
-              adb logcat -d | grep -i "FATAL EXCEPTION"
-              exit 1
-            fi
-            adb exec-out screencap -p > screenshot.png
-            ls -la screenshot.png
+          # The runner executes every script line with a separate
+          # `/usr/bin/sh -c`, so multi-line constructs (for/if) break here
+          # (run #6 failed on a bare `for ...; do` line). The whole test
+          # lives in ci/smoke-test.sh and runs as one command.
+          script: bash ci/smoke-test.sh
 
       - name: Upload APK and screenshot
         if: always()
